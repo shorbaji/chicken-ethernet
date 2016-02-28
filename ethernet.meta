@@ -1,0 +1,7 @@
+(
+ (license "BSD")
+ (category net)
+ (needs defstruct)
+ (test-depends test ports)
+ (author "Omar Shorbaji")
+ (synopsis "A library to parse and unparse Ethernet frames"))
