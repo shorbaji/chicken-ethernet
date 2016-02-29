@@ -4,7 +4,7 @@
 		   read-ethernet-frame write-ethernet-frame)
 
   (import chicken scheme)
-  (use defstruct extras srfi-13)
+  (use defstruct extras)
 
   
   (define broadcast-mac '(255 255 255 255 255 255))
@@ -18,10 +18,10 @@
     payload (dot1q #f))
 
   (define (mac-address->string mac)
-    (string-join (map (lambda (i)
-			(sprintf "~X" i))
-		      mac)
-		 ":"))
+    (string-intersperse (map (lambda (i)
+			       (sprintf "~X" i))
+			     (mac))
+			":"))
 
   (define (read-octets n)
     (map char->integer (string->list (read-string n))))
@@ -48,11 +48,11 @@
   (define write-payload write-string)
 
   (define (read-ethernet-frame #!optional (dot1q? #f))
-    (let* ((dst (read-mac))
-	   (src (read-mac))
-	   (dot1q (and dot1q? (read-dot1q)))
-	   (ethertype (read-ethertype))
-	   (payload (read-payload)))
+    (let ((dst (read-mac))
+	  (src (read-mac))
+	  (dot1q (and dot1q? (read-dot1q)))
+	  (ethertype (read-ethertype))
+	  (payload (read-payload)))
       (make-ethernet-frame dst: dst
 			   src: src
 			   ethertype: ethertype
