@@ -16,6 +16,6 @@
 		       (lambda () (write-ethernet-frame f)))
 		   (lambda () (read-ethernet-frame)))))
 	 (and (equal? (ethernet-frame-dst f) (ethernet-frame-dst r))
-	      (equal? (etherent-frame-src f) (ethernet-frame-src r))))))
+	      (equal? (ethernet-frame-src f) (ethernet-frame-src r))))))
 
 (test-exit)

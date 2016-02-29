@@ -4,7 +4,7 @@
 		   read-ethernet-frame write-ethernet-frame)
 
   (import chicken scheme)
-  (use defstruct extras)
+  (use defstruct extras data-structures)
 
   
   (define broadcast-mac '(255 255 255 255 255 255))

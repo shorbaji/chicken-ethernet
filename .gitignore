@@ -1,4 +1,4 @@
 *~
 salmonella.log
 ethernet.import.scm
-ethernet.import.so
+*.so
