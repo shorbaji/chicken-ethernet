@@ -6,11 +6,11 @@
  "basics"
  (test "read is complement of write"
        #t
-       (let* ((f (make-ethernet-frame dst: '(255 255 255 255 255 255)
-				      src: '(0 1 2 3 4 5)
-				      ethertype: 65535
-				      payload: "yo!"
-				      dot1q: #f))
+       (let* ((f (make-ethernet-frame 60000
+				      5
+				      #f
+				      65535
+				      "yo!"))
 	      (r (with-input-from-string
 		     (with-output-to-string
 		       (lambda () (write-ethernet-frame f)))

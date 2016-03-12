@@ -4,64 +4,61 @@
 		   read-ethernet-frame write-ethernet-frame)
 
   (import chicken scheme)
-  (use defstruct extras data-structures)
+  (use srfi-1 extras data-structures)
 
-  
   (define broadcast-mac '(255 255 255 255 255 255))
 
-  (use defstruct)
-
-  (defstruct ethernet-frame
-    dst
-    src
-    ethertype
-    payload (dot1q #f))
+  (define make-ethernet-frame list)
+  (define ethernet-frame-dst first)
+  (define ethernet-frame-src second)
+  (define ethernet-frame-dot1q third)
+  (define ethernet-frame-ethertype fourth)
+  (define ethernet-frame-payload fifth)
 
   (define (mac-address->string mac)
     (string-intersperse (map (lambda (i)
 			       (sprintf "~X" i))
-			     (mac))
+			     (octets->int mac 6))
 			":"))
 
+  (define (octets->int octets)
+    (fold (lambda (n acc) (+ n (* acc 256))) 0 octets))
+
+
+  (define (int->octets i n)
+    (unfold-right (lambda (x) (zero? (cdr x)))
+		  (lambda (x) (remainder (car x) 256))
+		  (lambda (x) (cons (quotient (car x) 256)
+				    (- (cdr x) 1)))
+		  (cons i n)))
+  
   (define (read-octets n)
     (map char->integer (string->list (read-string n))))
 
   (define (write-octets ls)
     (write-string (list->string (map integer->char ls))))
 
-  (define (read-mac) (read-octets 6))
-  (define (write-mac mac) (write-octets mac))
-
+  (define (read-mac) (octets->int (read-octets 6)))
+  (define (write-mac mac) (write-octets (int->octets mac 6)))
   (define (read-dot1q) (read-octets 2))
-  (define (write-dot1q dot1q) (and dot1q
-				   (write-octets dot1q)))
-
-  (define (read-ethertype)
-    (let ((r (read-octets 2)))
-      (+ (* 256 (car r)) (cadr r))))
-
-  (define (write-ethertype e)
-    (write-octets (list (quotient e 256)
-			(remainder e 256))))
+  (define (write-dot1q dot1q) (and dot1q (write-octets dot1q)))
+  
+  (define (read-ethertype) (octets->int (read-octets 2)))
+  (define (write-ethertype e) (write-octets (int->octets e 2)))
 
   (define read-payload read-string)
   (define write-payload write-string)
 
   (define (read-ethernet-frame #!optional (dot1q? #f))
-    (let ((dst (read-mac))
-	  (src (read-mac))
-	  (dot1q (and dot1q? (read-dot1q)))
-	  (ethertype (read-ethertype))
-	  (payload (read-payload)))
-      (make-ethernet-frame dst: dst
-			   src: src
-			   ethertype: ethertype
-			   payload: payload
-			   dot1q: dot1q)))
+    (let* ((dst (read-mac))
+	   (src (read-mac))
+	   (dot1q (and dot1q? (read-dot1q)))
+	   (ethertype (read-ethertype))
+	   (payload (read-payload)))
+      (list dst src dot1q ethertype payload)))
 
   (define (write-ethernet-frame frame)
-    (map (lambda (fn nth)
-	   (fn (nth frame)))
-	 (list write-mac write-mac write-dot1q write-ethertype write-payload)
-	 (list ethernet-frame-dst ethernet-frame-src ethernet-frame-dot1q
-	       ethernet-frame-ethertype ethernet-frame-payload))))
+    (map (lambda (fn x)
+	   (fn x))
+	 `(,write-mac ,write-mac ,write-dot1q ,write-ethertype ,write-payload)
+	 frame)))
