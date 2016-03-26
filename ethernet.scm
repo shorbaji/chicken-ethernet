@@ -1,13 +1,25 @@
 (module ethernet
     (broadcast-mac make-ethernet-frame ethernet-frame-dst ethernet-frame-src ethernet-frame-ethertype
 		   ethernet-frame-payload ethernet-frame-dot1q
-		   read-ethernet-frame write-ethernet-frame)
+		   read-ethernet-frame write-ethernet-frame
+		   broadcast? multicast?)
 
   (import chicken scheme)
   (use srfi-1 extras data-structures)
 
   (define broadcast-mac '(255 255 255 255 255 255))
 
+  (define (broadcast? mac)
+    (eq? #xffffffffffff mac))
+
+  (define (multicast? mac ethertype)
+    (or (and (eq? ethertype #x0800)
+	     (>= mac #x01005e000000)
+	     (<= mac #x01005effffff))
+	(and (eq? ethertype #x086dd)
+	     (>= mac #x333300000000)
+	     (<= mac #x3333ffffffff))))
+  
   (define make-ethernet-frame list)
   (define ethernet-frame-dst first)
   (define ethernet-frame-src second)
@@ -23,7 +35,6 @@
 
   (define (octets->int octets)
     (fold (lambda (n acc) (+ n (* acc 256))) 0 octets))
-
 
   (define (int->octets i n)
     (unfold-right (lambda (x) (zero? (cdr x)))
